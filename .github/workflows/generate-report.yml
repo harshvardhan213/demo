@@ -7,11 +7,11 @@ on:
         description: Report type
         type: choice
         required: true
-        default: invoice
+        default: quarterly
         options:
-          - invoice
-          - statement
-          - summary
+          - quarterly
+          - audit
+          - tax
       month:
         description: Billing month (YYYY-MM)
         type: string
@@ -22,8 +22,17 @@ on:
         type: string
         required: true
         default: acme
+      region:
+        description: Region
+        type: choice
+        required: true
+        default: india
+        options:
+          - india
+          - us
+          - eu
 
-run-name: ${{ inputs.report_type }} ${{ inputs.month }} ${{ inputs.customer }}
+run-name: ${{ inputs.report_type }} ${{ inputs.month }} ${{ inputs.customer }} ${{ inputs.region }}
 
 jobs:
   build:
@@ -39,10 +48,10 @@ jobs:
           python scripts/generate_report.py
           --report-type "${{ inputs.report_type }}"
           --month "${{ inputs.month }}"
-          --customer "${{ inputs.customer }}"
-          --variant main
-          --out out/report-${{ inputs.report_type }}-${{ inputs.month }}.pdf
+          --customer "${{ inputs.customer }} (${{ inputs.region }})"
+          --variant v2
+          --out out/report-${{ inputs.report_type }}-${{ inputs.month }}-${{ inputs.region }}.pdf
       - uses: actions/upload-artifact@v4
         with:
-          name: report-${{ inputs.report_type }}-${{ inputs.month }}
+          name: report-${{ inputs.report_type }}-${{ inputs.month }}-${{ inputs.region }}
           path: out/*.pdf
